@@ -1,0 +1,29 @@
+{
+  "name": "@etongduomi/jj-cli",
+  "version": "1.0.0",
+  "description": "公司内部，前端自定义vue文件生成器，包含views,apis,router,mock，用以一键生成对应的文件夹及导入和默认内容",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "bin": {
+    "jj-cli": "./bin/www/index.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/challengerST/jj-cli.git"
+  },
+  "keywords": [
+    "vue文件生成器",
+    "views",
+    "apis",
+    "router",
+    "mock"
+  ],
+  "author": "etongduomi",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/challengerST/jj-cli/issues"
+  },
+  "homepage": "https://github.com/challengerST/jj-cli#readme"
+}
