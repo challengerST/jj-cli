@@ -25,5 +25,13 @@
   "bugs": {
     "url": "https://github.com/challengerST/jj-cli/issues"
   },
-  "homepage": "https://github.com/challengerST/jj-cli#readme"
+  "homepage": "https://github.com/challengerST/jj-cli#readme",
+  "dependencies": {
+    "chalk": "^4.1.2",
+    "commander": "^7.2.0",
+    "figlet": "^1.5.2",
+    "fs-extra": "^10.0.0",
+    "inquirer": "^8.2.0",
+    "ora": "^6.0.1"
+  }
 }
