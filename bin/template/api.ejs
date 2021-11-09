@@ -1,0 +1,53 @@
+<!--
+ * @Author: etong
+ * @Date: 2021-11-01 10:23:36
+ * @LastEditTime: 2021-11-08 11:07:38
+ * @LastEditors: your name
+ * @Description: 
+ * @FilePath: \jj-cli\bin\template\api.ejs
+ * Think first, Program later
+-->
+import request from '@/utils/request'
+
+const  postExample = function(data) {
+    return request({
+        url: '',
+        method: 'post',
+        data: data
+    })
+}
+
+const  getExample = function(data) {
+    return request({
+        url: '',
+        method: 'get',
+        params: data
+    })
+}
+
+// 低代码post 方法
+const lowcodePostExample = function(data) {
+    const { module = 'doc', params } = data
+    return request({
+        url: module + '/Documents/SaveDocument',
+        method: 'post',
+        data: params
+    })
+}
+
+// 低代码get 方法
+const lowcodeGetExample = function(data) {
+    const { module = 'doc', params } = data
+    return request({
+        url: module + '/Documents/SaveDocument',
+        method: 'get',
+        params
+    })
+}
+
+export default {
+    postExample,
+    getExample,
+    lowcodePostExample,
+    lowcodeGetExample
+}

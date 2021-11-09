@@ -1,6 +1,6 @@
 {
   "name": "@etongduomi/jj-cli",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "公司内部，前端自定义vue文件生成器，包含views,apis,router,mock，用以一键生成对应的文件夹及导入和默认内容",
   "main": "index.js",
   "scripts": {
@@ -32,6 +32,10 @@
     "figlet": "^1.5.2",
     "fs-extra": "^10.0.0",
     "inquirer": "^8.2.0",
-    "ora": "^6.0.1"
+    "log-symbols": "^5.0.0",
+    "ora": "^5.4.0"
+  },
+  "devDependencies": {
+    "ejs": "^3.1.6"
   }
 }
