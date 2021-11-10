@@ -1,7 +1,7 @@
 /*
  * @Author: etong
  * @Date: 2021-10-27 17:24:03
- * @LastEditTime: 2021-11-08 15:17:09
+ * @LastEditTime: 2021-11-10 17:56:46
  * @LastEditors: your name
  * @Description:
  * @FilePath: \jj-cli\bin\lib\create.js
@@ -41,9 +41,6 @@ function upperFirstword (word) {
  * @return {*}
  */
 async function writeFile (path,content,chartset='utf-8') {
-    console.log('fs.existsSync(path)',fs.existsSync(path))
-    console.log('path',path)
-    console.log('content',content)
     return fsNode.promises.writeFile(path, content);
     if (fs.existsSync(path)) {
         // 提示用户是否确认覆盖
@@ -73,29 +70,28 @@ async function writeFile (path,content,chartset='utf-8') {
 
 /**
  * @description: 写入文件流
- * @param {*} path
- * @param {*} str
+ * @param {*} filePath 路由路径
+ * @param {*} fileName 输入命令
+ * @param {*} str 内容
  * @return {*}
  */
-function streamWrite(fileName, str) {
+function streamWrite(filePath, fileName, str) {
     // let ws = fs.createWriteStream(fileName);
     let strStream = '';
-    const read = fs.createReadStream(fileName)
+    const read = fs.createReadStream(filePath)
     read.setEncoding('utf-8')
     read.resume()
     console.log('开始读')
     read.on('data', data=> {
         strStream+=data.toString()
-        console.log('data')
         console.log('正在读...');
     })
-    console.log('')
     read.on('end',()=>{
         const regex = /\{([^"]*)\}/ig
-        const routerMapStr = regex.exec(strStream)
-        strStream = strStream.replace(routerMapStr[1], joinRouterContent(routerMapStr[1]))
+        const routerMapStr = regex.exec(strStream) || []
+        strStream = strStream.replace(routerMapStr[1], joinRouterContent(routerMapStr[1], fileName))
         console.log('读取结束')
-        writeStream(strStream, fileName)
+        writeStream(strStream, filePath)
     })
     console.log("程序执行完毕");
     
@@ -113,10 +109,21 @@ function writeStream(content,filePath) {
  * @param {*}
  * @return {*}
  */
-function joinRouterContent(routerMapStr) {
-    const content = `  blacklistManagement1: () => import(\'@/views/blackList/BlacklistManagement1\') \r\n`
+function joinRouterContent(routerMapStr, fileName) {
+    console.log('fileName',fileName)
+    const filePathArr = fileName.split('/')
+    const arrLen = filePathArr.length
+    const isCreateIndex = fileName.indexOf('.')>=0
+    console.log('routerMapStr',routerMapStr)
+    const key = isCreateIndex?filePathArr[arrLen-1].split('.')[0]:filePathArr[arrLen-1]
+    const content = `    ${key}: () => import('@/views/${fileName}') \r\n`
     const arr = routerMapStr.split(',')
+    console.log('arr1',arr)
     const len = arr.length
+    // 如果只有一个数据 新增加上逗号
+    // if( len == 1 ) {
+    //     arr[len-1] = strJoinDot(arr[len-1],arr[len-1].lastIndexOf(')'), ',')
+    // }
     // 数组最后一位元素
     const arrLastItem = arr[len-1]
     // 判断如果最后一位中含有// 证明是注释
@@ -136,6 +143,8 @@ function joinRouterContent(routerMapStr) {
         if(isNoteNotIncludeImport&&routerMapStr.indexOf(content)<0) {
             strJoinDotString = strJoinDot(lastItem,lastItem.lastIndexOf(')'), ',')
         }
+    } else {
+        strJoinDotString = strJoinDot(lastItem,lastItem.lastIndexOf(')'), ',')
     }
     arr[len-lastItemIndex] = strJoinDotString
     return arr.join(',') + (routerMapStr.indexOf(content)>=0?'':content)
@@ -223,17 +232,21 @@ const createPage = async (filename, isFolderFile) => {
 async function createApi(filename,isFolderFile) {
     const module = isFolderFile?filename.split('/')[0]:filename
     const file_name = isFolderFile?filename.split('/')[1]:filename
-    const apiPath = path.join(process.cwd(),'/src/api/',`${module}/${isFolderFile?file_name:module}.js`)
+    const filePathArr = filename.split('/')
+    const len = filePathArr.length
+    const isCreateIndex = filename.indexOf('.')>=0
+
+    const key = isCreateIndex?filePathArr[len-1].split('.')[0]:filePathArr[len-1]
+    const apiPath = path.join(process.cwd(),'/src/api/',`${module}/${key}.js`)
     const templatePath = await path.resolve(__dirname, '../template/api.ejs')
     if(fs.existsSync(apiPath)) {
-        // const importStr = `${module}: () => import('@/views/${isFolderFile?`${filename}.vue`:`${module}`}')`
-        // streamWrite(routePath, importStr)
+        console.log(chalk.red('api对应文件已存在，需要手动添加对应方法'))
     }  else {
         try{
             await fs.ensureFile(apiPath).then(async ()=>{
                 console.log(chalk.green('api对应文件创建成功'))
                 // 需要一个ejs模版进行渲染
-                const result = await ejsCompile(apiPath, {module, componentName: upperFirstword(module), moduleName: upperFirstword(module)});
+                const result = await ejsCompile(templatePath, {module, componentName: upperFirstword(module), moduleName: upperFirstword(module)});
                 
                 // 写入文件
                 writeFile(apiPath, result);
@@ -253,15 +266,30 @@ async function createApi(filename,isFolderFile) {
  * @return {*}
  */
 async function createRoute(filename,isFolderFile) {
+    // test
+    // test/test1.vue
+    // test/test2/test3.vue
+    const filePathArr = filename.split('/')
+    const len = filePathArr.length
+    const isCreateIndex = filename.indexOf('.')>=0
+
+    const key = isCreateIndex?filePathArr[len-1].split('.')[0]:filePathArr[len-1]
     const module = isFolderFile?filename.split('/')[0]:filename
     const routePath = path.join(process.cwd(),'/src/store/modules/routerMap/views/',`${module}.js`)
+    const templatePath = await path.resolve(__dirname, '../template/route.ejs')
+    const importStr = `${key}: () => import('@/views/${filename}')`
+
     if(fs.existsSync(routePath)) {
-        const importStr = `${module}: () => import('@/views/${isFolderFile?`${filename}.vue`:`${module}`}')`
-        streamWrite(routePath, importStr)
+        streamWrite(routePath,filename, importStr)
     }else{
         try{
-            await fs.ensureFile(routePath).then(()=>{
+            await fs.ensureFile(routePath).then(async ()=>{
                 console.log(chalk.green('路由对应文件创建成功'))
+                // 需要一个ejs模版进行渲染
+                const result = await ejsCompile(templatePath, {filename, key});
+                
+                // 写入文件
+                writeFile(routePath, result);
             }).catch(err=>{
                 console.log(`路由对应文件创建失败原因: ${err}`)
             })
@@ -276,8 +304,6 @@ module.exports = async function (name, options) {
     const isFolderFile = name.indexOf('/')>=0
     // 创建文件夹文件
     mkdirVueDirectory(name,isFolderFile)
-    // 创建文件对应vue文件
-    // createPage(name,isFolderFile)
     // 创建文件对应api
     createApi(name,isFolderFile)
     // 创建文件对应的路由

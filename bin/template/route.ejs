@@ -1,15 +1,5 @@
-<!--
- * @Author: etong
- * @Date: 2021-11-01 10:24:24
- * @LastEditTime: 2021-11-08 18:03:27
- * @LastEditors: your name
- * @Description: 
- * @FilePath: \jj-cli\bin\template\route.ejs
- * Think first, Program later
--->
 const map = {
-    viewActivity: () => import('@/views/activitySetpriceManagement/viewActivity') // 查看活动
+    <%= data.key %>: () => import('@/views/<%= data.filename %>') 
 }
-  
+
 export default map
-  
