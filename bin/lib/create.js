@@ -1,7 +1,7 @@
 /*
  * @Author: etong
  * @Date: 2021-10-27 17:24:03
- * @LastEditTime: 2021-11-11 14:27:09
+ * @LastEditTime: 2021-11-11 17:40:16
  * @LastEditors: your name
  * @Description:
  * @FilePath: \jj-cli\bin\lib\create.js
@@ -14,6 +14,7 @@ const fsNode = require('fs');
 const { ejsCompile } = require('../utils/ejsCompile')
 const inquirer = require("inquirer");
 const ora = require('ora')
+const logSymbols = require('log-symbols')
 
 /**
  * @description: 拼接绝对路径
@@ -81,19 +82,19 @@ function streamWrite(filePath, fileName, str) {
     const read = fs.createReadStream(filePath)
     read.setEncoding('utf-8')
     read.resume()
-    console.log('开始读')
+    console.log(logSymbols.info, chalk.gray('🚀 开始读'))
     read.on('data', data=> {
         strStream+=data.toString()
-        console.log('正在读...');
+        console.log(logSymbols.info, chalk.gray('⏰ 正在读...'));
     })
     read.on('end',()=>{
         const regex = /\{([^"]*)\}/ig
         const routerMapStr = regex.exec(strStream) || []
         strStream = strStream.replace(routerMapStr[1], joinRouterContent(routerMapStr[1], fileName))
-        console.log('读取结束')
+        console.log(logSymbols.info, chalk.gray('读取结束'))
         writeStream(strStream, filePath)
     })
-    console.log("程序执行完毕");
+    console.log(logSymbols.info, chalk.gray('程序执行完毕'));
     
 }
 
@@ -101,7 +102,7 @@ function writeStream(content,filePath) {
     let ws = fs.createWriteStream(filePath);
     ws.write(new Buffer(content, 'utf-8'));
     ws.end()
-    console.log('写入结束')
+    console.log(logSymbols.info, chalk.gray('写入结束'))
 }
 
 /**
@@ -137,8 +138,8 @@ function joinRouterContent(routerMapStr, fileName) {
         if(isNoteNotIncludeImport&&routerMapStr.indexOf(content)<0) {
             strJoinDotString = strJoinDot(lastItem,lastItem.lastIndexOf(')'), ',')
         }
-    } else {
-        strJoinDotString = strJoinDot(lastItem,lastItem.lastIndexOf(')'), ',')
+    } else {    
+            strJoinDotString = strJoinDot(lastItem,lastItem.lastIndexOf(')'), ',')
     }
     arr[len-lastItemIndex] = strJoinDotString
     return arr.join(',') + (routerMapStr.indexOf(content)>=0?'':content)
@@ -173,9 +174,9 @@ function mkdirVueDirectory (filename,isFolderFile) {
         path.join(process.cwd(),'/src/views/',`${filename}/index.vue`)
         fs.pathExists(filePath, (err, exists)=> {
                 if(exists) {
-                    console.log(`${chalk.red(`${filePath} 已经存在`)}`)
+                    console.log(`🔥 ${chalk.red(`${filePath} 已经存在`)}`)
                 }else{
-                    const spinner = ora(`${chalk.green(`正在创建对应文件: ${filePath}`)}`)
+                    const spinner = ora(`🚀 ${chalk.green(`正在创建对应文件: ${filePath}`)}`)
                     spinner.start()
                     fs.ensureFile(filePath,(err)=>{
                         if(err) {
@@ -184,7 +185,7 @@ function mkdirVueDirectory (filename,isFolderFile) {
                         }else{
                             // 判断是否有文件层级
                             const isFolderFile = filename.indexOf('/')>=0
-                            spinner.succeed(`${chalk.green(`${filePath} 创建成功`)}`)
+                            spinner.succeed(`🌞 ${chalk.green(`${filePath} 创建成功`)}`)
                             // 创建文件对应vue文件 并写入内容
                             createPage(filename,isFolderFile)
                             resolve(filePath)
@@ -233,16 +234,16 @@ async function createApi(filename,isFolderFile) {
     const apiPath = path.join(process.cwd(),'/src/api/',`${module}/${key}.js`)
     const templatePath = await path.resolve(__dirname, '../template/api.ejs')
     if(fs.existsSync(apiPath)) {
-        console.log(chalk.red('api对应文件已存在，需要手动添加对应方法'))
+        console.log(`🔥 ${chalk.red('api对应文件已存在，需要手动添加对应方法')}`)
     }  else {
         try{
-            const spinner = ora(`${chalk.green(`正在创建api对应文件: ${apiPath}`)}`)
+            const spinner = ora(`🚀 ${chalk.green(`正在创建api对应文件: ${apiPath}`)}`)
             spinner.start()
             await fs.ensureFile(apiPath).then(async (err)=>{
                 if(err) {
-                    spinner.fail(`api文件创建失败原因: ${err}`)
+                    spinner.fail(`🔥 api文件创建失败原因: ${err}`)
                 } else {
-                    spinner.succeed(`${chalk.green(`api文件: ${apiPath} 创建成功`)}`)
+                    spinner.succeed(`🌞 ${chalk.green(`api文件: ${apiPath} 创建成功`)}`)
                     // 需要一个ejs模版进行渲染
                     const result = await ejsCompile(templatePath, {module, componentName: upperFirstword(module), moduleName: upperFirstword(module)});
                     
@@ -251,10 +252,10 @@ async function createApi(filename,isFolderFile) {
                 }
 
             }).catch(err=>{
-                console.log(`api对应文件创建失败原因: ${err}`)
+                console.log(`🔥 api对应文件创建失败原因: ${err}`)
             })
         } catch(err) {
-            console.log(`api文件catch失败原因:${chalk.red(err)}`)
+            console.log(`🔥 api文件catch失败原因:${chalk.red(err)}`)
         }
     }
 
@@ -283,13 +284,13 @@ async function createRoute(filename,isFolderFile) {
         streamWrite(routePath,filename, importStr)
     }else{
         try{
-            const spinner = ora(`${chalk.green(`正在创建路由对应文件: ${routePath}`)}`)
+            const spinner = ora(`🚀 ${chalk.green(`正在创建路由对应文件: ${routePath}`)}`)
             spinner.start()
             await fs.ensureFile(routePath).then(async (err)=>{
                 if(err) {
                     spinner.fail(`api文件创建失败原因: ${err}`)
                 } else {
-                    spinner.succeed(`${chalk.green(`路由文件: ${routePath} 创建成功`)}`)
+                    spinner.succeed(`🌞 ${chalk.green(`路由文件: ${routePath} 创建成功`)}`)
                     // 需要一个ejs模版进行渲染
                     const result = await ejsCompile(templatePath, {filename, key});
                     
