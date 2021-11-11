@@ -1,7 +1,7 @@
 /*
  * @Author: etong
  * @Date: 2021-10-27 17:24:03
- * @LastEditTime: 2021-11-11 17:40:16
+ * @LastEditTime: 2021-11-11 17:58:05
  * @LastEditors: your name
  * @Description:
  * @FilePath: \jj-cli\bin\lib\create.js
@@ -135,14 +135,17 @@ function joinRouterContent(routerMapStr, fileName) {
     // 最后一位不是注释 没有逗号
     let strJoinDotString = lastItem
     if(isNote) {
-        if(isNoteNotIncludeImport&&routerMapStr.indexOf(content)<0) {
+        if(isNoteNotIncludeImport&&routerMapStr.trim().indexOf(content.trim())<0) {
             strJoinDotString = strJoinDot(lastItem,lastItem.lastIndexOf(')'), ',')
         }
     } else {    
+        if(routerMapStr.trim().indexOf(content.trim())<0) {
             strJoinDotString = strJoinDot(lastItem,lastItem.lastIndexOf(')'), ',')
+        }
     }
     arr[len-lastItemIndex] = strJoinDotString
-    return arr.join(',') + (routerMapStr.indexOf(content)>=0?'':content)
+    console.log('routerMapStr.indexOf(content)',routerMapStr.trim().indexOf(content.trim()))
+    return arr.join(',') + (routerMapStr.trim().indexOf(content.trim())>=0?'':content)
 }
 
 /**
@@ -174,9 +177,9 @@ function mkdirVueDirectory (filename,isFolderFile) {
         path.join(process.cwd(),'/src/views/',`${filename}/index.vue`)
         fs.pathExists(filePath, (err, exists)=> {
                 if(exists) {
-                    console.log(`🔥 ${chalk.red(`${filePath} 已经存在`)}`)
+                    console.log(`🔥 ${chalk.red(`views文件: ${filePath} 已经存在`)}`)
                 }else{
-                    const spinner = ora(`🚀 ${chalk.green(`正在创建对应文件: ${filePath}`)}`)
+                    const spinner = ora(`🚀 ${chalk.green(`正在创建文件: ${filePath}`)}`)
                     spinner.start()
                     fs.ensureFile(filePath,(err)=>{
                         if(err) {
@@ -234,10 +237,10 @@ async function createApi(filename,isFolderFile) {
     const apiPath = path.join(process.cwd(),'/src/api/',`${module}/${key}.js`)
     const templatePath = await path.resolve(__dirname, '../template/api.ejs')
     if(fs.existsSync(apiPath)) {
-        console.log(`🔥 ${chalk.red('api对应文件已存在，需要手动添加对应方法')}`)
+        console.log(`🔥 ${chalk.red(`api文件: ${apiPath}已存在，需要手动添加对应方法`)}`)
     }  else {
         try{
-            const spinner = ora(`🚀 ${chalk.green(`正在创建api对应文件: ${apiPath}`)}`)
+            const spinner = ora(`🚀 ${chalk.green(`正在创建api文件: ${apiPath}`)}`)
             spinner.start()
             await fs.ensureFile(apiPath).then(async (err)=>{
                 if(err) {
@@ -284,11 +287,11 @@ async function createRoute(filename,isFolderFile) {
         streamWrite(routePath,filename, importStr)
     }else{
         try{
-            const spinner = ora(`🚀 ${chalk.green(`正在创建路由对应文件: ${routePath}`)}`)
+            const spinner = ora(`🚀 ${chalk.green(`正在创建路由文件: ${routePath}`)}`)
             spinner.start()
             await fs.ensureFile(routePath).then(async (err)=>{
                 if(err) {
-                    spinner.fail(`api文件创建失败原因: ${err}`)
+                    spinner.fail(`路由文件创建失败原因: ${err}`)
                 } else {
                     spinner.succeed(`🌞 ${chalk.green(`路由文件: ${routePath} 创建成功`)}`)
                     // 需要一个ejs模版进行渲染
