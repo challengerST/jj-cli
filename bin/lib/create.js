@@ -1,7 +1,7 @@
 /*
  * @Author: etong
  * @Date: 2021-10-27 17:24:03
- * @LastEditTime: 2021-11-10 17:56:46
+ * @LastEditTime: 2021-11-11 14:27:09
  * @LastEditors: your name
  * @Description:
  * @FilePath: \jj-cli\bin\lib\create.js
@@ -110,20 +110,14 @@ function writeStream(content,filePath) {
  * @return {*}
  */
 function joinRouterContent(routerMapStr, fileName) {
-    console.log('fileName',fileName)
     const filePathArr = fileName.split('/')
     const arrLen = filePathArr.length
     const isCreateIndex = fileName.indexOf('.')>=0
-    console.log('routerMapStr',routerMapStr)
     const key = isCreateIndex?filePathArr[arrLen-1].split('.')[0]:filePathArr[arrLen-1]
     const content = `    ${key}: () => import('@/views/${fileName}') \r\n`
     const arr = routerMapStr.split(',')
-    console.log('arr1',arr)
     const len = arr.length
-    // 如果只有一个数据 新增加上逗号
-    // if( len == 1 ) {
-    //     arr[len-1] = strJoinDot(arr[len-1],arr[len-1].lastIndexOf(')'), ',')
-    // }
+
     // 数组最后一位元素
     const arrLastItem = arr[len-1]
     // 判断如果最后一位中含有// 证明是注释
@@ -158,7 +152,6 @@ function joinRouterContent(routerMapStr, fileName) {
  * @return {*}
  */
 function strJoinDot(source, index, newStr) {
-    console.log('source',source)
     const start = index + 1;
     return source.slice(0,start) + (source.indexOf(',')>=0?'':newStr) + source.slice(start)
 }
@@ -243,13 +236,20 @@ async function createApi(filename,isFolderFile) {
         console.log(chalk.red('api对应文件已存在，需要手动添加对应方法'))
     }  else {
         try{
-            await fs.ensureFile(apiPath).then(async ()=>{
-                console.log(chalk.green('api对应文件创建成功'))
-                // 需要一个ejs模版进行渲染
-                const result = await ejsCompile(templatePath, {module, componentName: upperFirstword(module), moduleName: upperFirstword(module)});
-                
-                // 写入文件
-                writeFile(apiPath, result);
+            const spinner = ora(`${chalk.green(`正在创建api对应文件: ${apiPath}`)}`)
+            spinner.start()
+            await fs.ensureFile(apiPath).then(async (err)=>{
+                if(err) {
+                    spinner.fail(`api文件创建失败原因: ${err}`)
+                } else {
+                    spinner.succeed(`${chalk.green(`api文件: ${apiPath} 创建成功`)}`)
+                    // 需要一个ejs模版进行渲染
+                    const result = await ejsCompile(templatePath, {module, componentName: upperFirstword(module), moduleName: upperFirstword(module)});
+                    
+                    // 写入文件
+                    writeFile(apiPath, result);
+                }
+
             }).catch(err=>{
                 console.log(`api对应文件创建失败原因: ${err}`)
             })
@@ -283,13 +283,19 @@ async function createRoute(filename,isFolderFile) {
         streamWrite(routePath,filename, importStr)
     }else{
         try{
-            await fs.ensureFile(routePath).then(async ()=>{
-                console.log(chalk.green('路由对应文件创建成功'))
-                // 需要一个ejs模版进行渲染
-                const result = await ejsCompile(templatePath, {filename, key});
-                
-                // 写入文件
-                writeFile(routePath, result);
+            const spinner = ora(`${chalk.green(`正在创建路由对应文件: ${routePath}`)}`)
+            spinner.start()
+            await fs.ensureFile(routePath).then(async (err)=>{
+                if(err) {
+                    spinner.fail(`api文件创建失败原因: ${err}`)
+                } else {
+                    spinner.succeed(`${chalk.green(`路由文件: ${routePath} 创建成功`)}`)
+                    // 需要一个ejs模版进行渲染
+                    const result = await ejsCompile(templatePath, {filename, key});
+                    
+                    // 写入文件
+                    writeFile(routePath, result);
+                }
             }).catch(err=>{
                 console.log(`路由对应文件创建失败原因: ${err}`)
             })
