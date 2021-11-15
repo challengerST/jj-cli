@@ -29,13 +29,12 @@
   "dependencies": {
     "chalk": "^4.1.2",
     "commander": "^7.2.0",
+    "ejs": "^3.1.6",
     "figlet": "^1.5.2",
     "fs-extra": "^10.0.0",
     "inquirer": "^8.2.0",
     "log-symbols": "^4.1.0",
     "ora": "^5.4.0"
   },
-  "devDependencies": {
-    "ejs": "^3.1.6"
-  }
+  "devDependencies": {}
 }
